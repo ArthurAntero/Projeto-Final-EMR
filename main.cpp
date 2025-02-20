@@ -51,24 +51,28 @@ int main(int argc, char **argv)
     auto tree = factory.createTreeFromFile("./bt.xml");
 
 
-    tree.rootBlackboard()->set("battery_level", 30);
-    tree.rootBlackboard()->set("recharge_base_x", 0.0);
-    tree.rootBlackboard()->set("recharge_base_y", 0.0);
-    tree.rootBlackboard()->set("recharge_base_yaw", 0.0);
-    tree.rootBlackboard()->set("kitchen_x", 5.0);
-    tree.rootBlackboard()->set("kitchen_y", 5.0);
-    tree.rootBlackboard()->set("kitchen_yaw", 90.0);
-    tree.rootBlackboard()->set("waiting_room_x", 5.0);
-    tree.rootBlackboard()->set("waiting_room_y", 5.0);
-    tree.rootBlackboard()->set("waiting_room_yaw", 90.0);
-    tree.rootBlackboard()->set<std::unordered_map<int, std::vector<double>>>("room_positions", {{101, {1.0, 1.0, 90.0}}, {102, {2.0, 2.0, 90.0}}, {103, {3.0, 3.0, 90.0}}});
-    tree.rootBlackboard()->set<std::unordered_map<int, bool>>("available", {{101, true}, {102, false}, {103, true}});
-    tree.rootBlackboard()->set("wait_time_sec", 10);
-    tree.rootBlackboard()->set("pickup_time_sec", 10);
 
-    auto result = tree.tickRootWhileRunning();
+    while (true)
+    {
+        tree.rootBlackboard()->set("recharge_base_x", 0.0);
+        tree.rootBlackboard()->set("recharge_base_y", 0.0);
+        tree.rootBlackboard()->set("recharge_base_yaw", 0.0);
+        tree.rootBlackboard()->set("kitchen_x", 5.0);
+        tree.rootBlackboard()->set("kitchen_y", 5.0);
+        tree.rootBlackboard()->set("kitchen_yaw", 90.0);
+        tree.rootBlackboard()->set("waiting_room_x", 5.0);
+        tree.rootBlackboard()->set("waiting_room_y", 5.0);
+        tree.rootBlackboard()->set("waiting_room_yaw", 90.0);
+        tree.rootBlackboard()->set<std::unordered_map<int, std::vector<double>>>("room_positions", {{101, {1.0, 1.0, 90.0}}, {102, {2.0, 2.0, 90.0}}, {103, {3.0, 3.0, 90.0}}});
+        tree.rootBlackboard()->set<std::unordered_map<int, bool>>("available", {{101, true}, {102, false}, {103, true}});
+        tree.rootBlackboard()->set("wait_time_sec", 10);
+        tree.rootBlackboard()->set("pickup_time_sec", 10);
 
-	std::cout << "\nBT ended with result: " << result << std::endl;
+        auto result = tree.tickRootWhileRunning();
+
+        std::cout << "\nBT ended with result: " << result << std::endl;
+    }
+
 
     // rclcpp::shutdown();
 

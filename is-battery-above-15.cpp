@@ -13,18 +13,19 @@ public:
 
     static BT::PortsList providedPorts()
     {
-        return {BT::InputPort<float>("battery_level")};
+        return {BT::OutputPort<double>("battery_level")};
     }
 
     BT::NodeStatus tick() override
     {
-        float battery_level;
-        if (!getInput("battery_level", battery_level))
-        {
-            std::cerr << "[ERROR] IsBatteryAbove15: Failed to get battery level from blackboard" << std::endl;
-            return BT::NodeStatus::FAILURE;
-        }
 
+        double battery_level;
+        std::cout << "Enter current battery level: ";
+        std::cin >> battery_level;
+
+        setOutput("battery_level", battery_level);
+
+        
         if (battery_level > 15.0)
         {
             std::cout << "[INFO] IsBatteryAbove15: Battery level is above 15%" << std::endl;
