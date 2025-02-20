@@ -1,7 +1,7 @@
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include <behaviortree_cpp/action_node.h>
 #include <behaviortree_cpp/bt_factory.h>
-// #include <rclcpp/rclcpp.hpp>
+#include <rclcpp/rclcpp.hpp>
 #include <iostream>
 #include <unordered_map>
 #include <vector>
@@ -26,11 +26,13 @@
 
 int main(int argc, char **argv)
 {
-    // rclcpp::init(argc, argv);
-    // auto node = rclcpp::Node::make_shared("robot_behavior_tree");
+    // Inicializa o ROS 2
+    rclcpp::init(argc, argv);
+    auto node = rclcpp::Node::make_shared("robot_behavior_tree");
 
     BT::BehaviorTreeFactory factory;
 
+    // Registrar os nós da árvore
     factory.registerNodeType<DeliverDishesToKitchen>("DeliverDishesToKitchen");
     factory.registerNodeType<DeliverToTable>("DeliverToTable");
     factory.registerNodeType<FetchRoomForDishes>("FetchRoomForDishes");
@@ -47,13 +49,14 @@ int main(int argc, char **argv)
     factory.registerNodeType<WaitForCall>("WaitForCall");
     factory.registerNodeType<WaitForPickUp>("WaitForPickUp");
 
-
     auto tree = factory.createTreeFromFile("./bt.xml");
 
+    // Criar um timer para rodar a Behavior Tree em tempo real
+    rclcpp::Rate loop_rate(10); // 10 Hz
 
-
-    while (true)
+    while (rclcpp::ok()) // Enquanto o ROS 2 estiver rodando
     {
+        // Atualizar os valores da Blackboard
         tree.rootBlackboard()->set("recharge_base_x", 0.0);
         tree.rootBlackboard()->set("recharge_base_y", 0.0);
         tree.rootBlackboard()->set("recharge_base_yaw", 0.0);
@@ -68,13 +71,17 @@ int main(int argc, char **argv)
         tree.rootBlackboard()->set("wait_time_sec", 10);
         tree.rootBlackboard()->set("pickup_time_sec", 10);
 
+        // Rodar a árvore de comportamento
         auto result = tree.tickRootWhileRunning();
 
         std::cout << "\nBT ended with result: " << result << std::endl;
+
+        // Permitir que o ROS processe mensagens pendentes
+        rclcpp::spin_some(node);
+
+        loop_rate.sleep();
     }
 
-
-    // rclcpp::shutdown();
-
+    rclcpp::shutdown();
     return 0;
 }

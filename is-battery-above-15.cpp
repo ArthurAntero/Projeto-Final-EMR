@@ -1,15 +1,20 @@
 #include <behaviortree_cpp/action_node.h>
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/battery_state.hpp>
 #include <iostream>
-#include <unordered_map>
-#include <vector>
-#include <chrono>
-#include <thread>
 
-class IsBatteryAbove15 : public BT::ConditionNode
+class IsBatteryAbove15 : public BT::ConditionNode, public rclcpp::Node
 {
 public:
     IsBatteryAbove15(const std::string &name, const BT::NodeConfiguration &config)
-        : BT::ConditionNode(name, config) {}
+        : BT::ConditionNode(name, config), rclcpp::Node("is_battery_above_15")
+    {
+        // Assina o tópico correto `/battery_state`
+        battery_subscriber_ = this->create_subscription<sensor_msgs::msg::BatteryState>(
+            "/battery_state", 10, std::bind(&IsBatteryAbove15::batteryCallback, this, std::placeholders::_1));
+
+        battery_level_ = 100.0; // Inicializa a bateria como cheia
+    }
 
     static BT::PortsList providedPorts()
     {
@@ -18,21 +23,24 @@ public:
 
     BT::NodeStatus tick() override
     {
+        setOutput("battery_level", battery_level_);
 
-        double battery_level;
-        std::cout << "Enter current battery level: ";
-        std::cin >> battery_level;
-
-        setOutput("battery_level", battery_level);
-
-        
-        if (battery_level > 15.0)
+        if (battery_level_ > 15.0)
         {
-            std::cout << "[INFO] IsBatteryAbove15: Battery level is above 15%" << std::endl;
+            RCLCPP_INFO(this->get_logger(), "Battery level is above 15%% (%.2f%%)", battery_level_);
             return BT::NodeStatus::SUCCESS;
         }
 
-        std::cout << "[WARNING] IsBatteryAbove15: Battery level is below or equal to 15%" << std::endl;
+        RCLCPP_WARN(this->get_logger(), "Battery level is below or equal to 15%% (%.2f%%)", battery_level_);
         return BT::NodeStatus::FAILURE;
     }
+
+private:
+    void batteryCallback(const sensor_msgs::msg::BatteryState::SharedPtr msg)
+    {
+        battery_level_ = msg->percentage * 100.0; // Converte de fração para porcentagem
+    }
+
+    rclcpp::Subscription<sensor_msgs::msg::BatteryState>::SharedPtr battery_subscriber_;
+    double battery_level_;
 };
