@@ -38,7 +38,7 @@ int main(int argc, char **argv)
     factory.registerNodeType<WaitForCall>("WaitForCall");
     factory.registerNodeType<WaitForPickUp>("WaitForPickUp");
 
-    auto tree = factory.createTreeFromFile("./bt.xml");
+    auto tree = factory.createTreeFromFile("../config/bt.xml");
 
     while (rclcpp::ok())
     {
