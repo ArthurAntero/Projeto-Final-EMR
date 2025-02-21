@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 #include <rclcpp/rclcpp.hpp>
-#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <geometry_msgs/geometry_msgs/msg/pose_stamped.hpp>
 #include <iostream>
 #include <chrono>
 #include <thread>
