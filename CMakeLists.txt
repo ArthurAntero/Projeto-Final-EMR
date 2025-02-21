@@ -18,10 +18,7 @@ add_executable(${PROJECT_NAME}
     src/deliver-dish-to-kitchen.cpp
     src/deliver-to-table.cpp
     src/fetch-room.cpp
-    src/fetch-room-for-dishes.cpp
-    src/go-to-kitchen.cpp
-    src/go-to-room.cpp
-    src/go-to-waiting-room.cpp
+    src/go-to-pose.cpp
     src/got-right-meal.cpp
     src/is-battery-above-15.cpp
     src/pickup-dish.cpp
