@@ -17,7 +17,8 @@ public:
     {
         return {
             BT::InputPort<std::unordered_map<int, std::vector<double>>>("room_positions"),
-            BT::InputPort<std::unordered_map<int, int>>("meals")
+            BT::InputPort<std::unordered_map<int, int>>("meals"),
+            BT::OutputPort<std::unordered_map<int, int>>("meals")
         };
     }
 

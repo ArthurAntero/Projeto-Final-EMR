@@ -5,10 +5,10 @@
 #include <chrono>
 #include <thread>
 
-class PickUpMeal : public BT::SyncActionNode
+class PickUpMeals : public BT::SyncActionNode
 {
 public:
-    PickUpMeal(const std::string &name, const BT::NodeConfiguration &config)
+    PickUpMeals(const std::string &name, const BT::NodeConfiguration &config)
         : BT::SyncActionNode(name, config) {}
 
     static BT::PortsList providedPorts()
