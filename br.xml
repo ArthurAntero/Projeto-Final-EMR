@@ -1,0 +1,87 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <ReactiveSequence>
+            <Fallback>
+                <Condition ID="IsBatteryAbove15" battery_level="{battery_level}"/>
+                <Action ID="GoToPose" name="GoToRechargeBase" x="{recharge_base_x}" y="{recharge_base_y}" yaw="{recharge_base_yaw}"/>
+            </Fallback>
+            <Sequence name="PickupMeal">
+                <Action ID="GoToPose" name="GoToKitchen" x="{kitchen_x}" y="{kitchen_y}" yaw="{kitchen_yaw}"/>
+                <Action ID="PickUpMeals" meals="{meals}" meals_quantity="{meals_quantity}"/>
+            </Sequence>
+            <Repeat num_cycles="{meals_quantity}">
+                <Sequence name="delivery">
+                    <Action ID="FetchRoom" meals="{meals}" name="FetchRoomForDeliverMeal" room_positions="{room_positions}" room_x="{room_x}" room_y="{room_y}" room_yaw="{room_yaw}"/>
+                    <Action ID="GoToPose" name="GoToRoomToDeliverMeal" x="{room_x}" y="{room_y}" yaw="{room_yaw}"/>
+                    <Fallback>
+                        <Sequence>
+                            <Condition ID="IsPickUpAvailable" available="{available}" meals="{meals}"/>
+                            <Action ID="WaitForPickUp" pickup_time_sec="{pickup_time_sec}"/>
+                        </Sequence>
+                        <Action ID="DeliverMealToTable"/>
+                    </Fallback>
+                    <Condition ID="GotRightMeal" meals="{meals}" room_positions="{room_positions}"/>
+                    <Action ID="GoToPose" name="GoToWaitingRoom" x="{waiting_room_x}" y="{waiting_room_y}" yaw="{waiting_room_yaw}"/>
+                </Sequence>
+            </Repeat>
+            <Sequence name="PickUpDishes">
+                <Action ID="WaitForCall" dishes_quantity="{dishes_quantity}" meals="{meals}"/>
+                <Repeat num_cycles="{dishes_quantity}">
+                    <Sequence>
+                        <Action ID="FetchRoom" meals="{meals}" name="FetchRoomForDishes" room_positions="{room_positions}" room_x="{room_x}" room_y="{room_y}" room_yaw="{room_yaw}"/>
+                        <Action ID="GoToPose" name="GoToRoomToPickUpDishes" x="{room_x}" y="{room_y}" yaw="{room_yaw}"/>
+                        <Action ID="PickUpDish" meals="{meals}"/>
+                    </Sequence>
+                </Repeat>
+                <Action ID="GoToPose" name="GoToKitchen" x="{kitchen_x}" y="{kitchen_y}" yaw="{kitchen_yaw}"/>
+                <Action ID="DeliverDishesToKitchen"/>
+            </Sequence>
+        </ReactiveSequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Action ID="CheckBattery"/>
+        <Action ID="DeliverDishesToKitchen"/>
+        <Action ID="DeliverMealToTable"/>
+        <Action ID="FetchRoom">
+            <input_port name="meals"/>
+            <input_port name="room_positions"/>
+            <output_port name="room_x"/>
+            <output_port name="room_y"/>
+            <output_port name="room_yaw"/>
+        </Action>
+        <Action ID="GoToPose">
+            <input_port name="x"/>
+            <input_port name="y"/>
+            <input_port name="yaw"/>
+        </Action>
+        <Condition ID="GotRightMeal">
+            <input_port name="meals"/>
+            <input_port name="room_positions"/>
+        </Condition>
+        <Condition ID="IsBatteryAbove15">
+            <input_port name="battery_level"/>
+        </Condition>
+        <Condition ID="IsPickUpAvailable">
+            <input_port name="available"/>
+            <input_port name="meals"/>
+        </Condition>
+        <Action ID="PickUpDish">
+            <input_port name="meals"/>
+        </Action>
+        <Action ID="PickUpMeals">
+            <output_port name="meals"/>
+            <output_port name="meals_quantity"/>
+        </Action>
+        <Action ID="WaitForCall">
+            <output_port name="dishes_quantity"/>
+            <output_port name="meals"/>
+        </Action>
+        <Action ID="WaitForPickUp">
+            <input_port name="pickup_time_sec"/>
+        </Action>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>

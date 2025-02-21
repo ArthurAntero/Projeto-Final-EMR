@@ -15,7 +15,7 @@ public:
     static BT::PortsList providedPorts()
     {
         return {
-            BT::OutputPort<std::vector<int>>("dishes"),
+            BT::OutputPort<std::unordered_map<int, int>>("meals"),
             BT::OutputPort<int>("dishes_quantity")
         };
     }
@@ -23,7 +23,7 @@ public:
     BT::NodeStatus tick() override
     {
         int dishes_quantity;
-        std::vector<int> dishes;
+        std::unordered_map<int, int> meals;
 
         std::cout << "Enter the number of rooms that need dishes collected: ";
         std::cin >> dishes_quantity;
@@ -34,11 +34,11 @@ public:
             int room_id;
             std::cout << "Room " << (i + 1) << ": ";
             std::cin >> room_id;
-            dishes.push_back(room_id);
+            meals[i] = room_id; 
             std::cout << "[INFO] Room " << room_id << " added to dishes list." << std::endl;
         }
 
-        setOutput("dishes", dishes);
+        setOutput("meals", meals);
         setOutput("dishes_quantity", dishes_quantity);
 
         std::cout << "[INFO] WaitForCall: Finished collecting calls: " << dishes_quantity << " rooms collected" << std::endl;

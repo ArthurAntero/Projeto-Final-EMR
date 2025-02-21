@@ -1,4 +1,4 @@
-#include <behaviortree_cpp/action_node.h>
+#include <behaviortree_cpp_v3/action_node.h>
 #include <iostream>
 #include <unordered_map>
 #include <vector>
@@ -14,34 +14,36 @@ public:
     static BT::PortsList providedPorts()
     {
         return {
-            BT::InputPort<std::vector<int>>("dishes"),
+            BT::InputPort<std::unordered_map<int, int>>("meals"),
         };
     }
 
     BT::NodeStatus tick() override
     {
-        std::vector<int> dishes;
-        if (!getInput("dishes", dishes))
+        std::unordered_map<int, int> meals;
+        if (!getInput("meals", meals))
         {
-            std::cerr << "[ERROR] PickUpDish: Failed to get dishes list" << std::endl;
+            std::cerr << "[ERROR] PickUpDish: Failed to get meals list" << std::endl;
             return BT::NodeStatus::FAILURE;
         }
 
-        if (dishes.empty())
+        if (meals.empty())
         {
-            std::cerr << "[WARNING] PickUpDish: No dishes available to pick up" << std::endl;
+            std::cerr << "[WARNING] PickUpDish: No meals available to pick up" << std::endl;
             return BT::NodeStatus::FAILURE;
         }
 
-        int room_id = dishes.front();
-        dishes.erase(dishes.begin());
+        auto it = meals.begin();
+        int room_id = it->first;
+
+        meals.erase(it);
 
         if (auto bb = config().blackboard)
-            {
-                bb->set("dishes", dishes);
-            }
+        {
+            bb->set("meals", meals);
+        }
 
-        std::cout << "[INFO] PickUpDish: Collected dirty dishes from room " << room_id << std::endl;
+        std::cout << "[INFO] PickUpDish: Picking up dishes from room " << room_id << std::endl;
         return BT::NodeStatus::SUCCESS;
     }
 };
