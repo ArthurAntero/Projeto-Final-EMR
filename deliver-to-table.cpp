@@ -1,15 +1,15 @@
 #include <behaviortree_cpp/action_node.h>
+#include <rclcpp/rclcpp.hpp>
 #include <iostream>
-#include <unordered_map>
 #include <vector>
 #include <chrono>
 #include <thread>
 
-class DeliverToTable : public BT::SyncActionNode
+class DeliverToTable : public BT::SyncActionNode, public rclcpp::Node
 {
 public:
     DeliverToTable(const std::string &name, const BT::NodeConfiguration &config)
-        : BT::SyncActionNode(name, config) {}
+        : BT::SyncActionNode(name, config), rclcpp::Node("deliver_to_table_node") {}
 
     static BT::PortsList providedPorts()
     {
@@ -18,7 +18,7 @@ public:
 
     BT::NodeStatus tick() override
     {
-        std::cout << "[INFO] DeliverToTable: Delivering meal to table..." << std::endl;
+        RCLCPP_INFO(this->get_logger(), "Delivering meal to table...");
         return BT::NodeStatus::SUCCESS;
     }
 };

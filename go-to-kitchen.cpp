@@ -47,4 +47,14 @@ public:
 
 private:
     rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr publisher_;
+
+    geometry_msgs::msg::Quaternion yawToQuaternion(double yaw)
+    {
+        geometry_msgs::msg::Quaternion q;
+        q.w = cos(yaw * 0.5);
+        q.x = 0.0;
+        q.y = 0.0;
+        q.z = sin(yaw * 0.5);
+        return q;
+    }
 };

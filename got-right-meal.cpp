@@ -1,17 +1,14 @@
 #include <behaviortree_cpp/action_node.h>
+#include <rclcpp/rclcpp.hpp>
 #include <iostream>
-#include <string>
 #include <unordered_map>
 #include <vector>
-#include <chrono>
-#include <thread>
-#include <limits>
 
-class GotRightMeal : public BT::ConditionNode
+class GotRightMeal : public BT::ConditionNode, public rclcpp::Node
 {
 public:
     GotRightMeal(const std::string &name, const BT::NodeConfiguration &config)
-        : BT::ConditionNode(name, config) {}
+        : BT::ConditionNode(name, config), rclcpp::Node("got_right_meal_node") {}
 
     static BT::PortsList providedPorts()
     {
@@ -28,23 +25,21 @@ public:
 
         if (!getInput("room_positions", room_positions))
         {
-            std::cerr << "[ERROR] GotRightMeal: Failed to get room positions from blackboard" << std::endl;
+            RCLCPP_ERROR(this->get_logger(), "GotRightMeal: Failed to get room positions from blackboard");
             return BT::NodeStatus::FAILURE;
         }
 
         if (!getInput("meals", meals))
         {
-            std::cerr << "[ERROR] GotRightMeal: Failed to get meals map from blackboard" << std::endl;
+            RCLCPP_ERROR(this->get_logger(), "GotRightMeal: Failed to get meals map from blackboard");
             return BT::NodeStatus::FAILURE;
         }
 
         if (meals.empty())
         {
-            std::cerr << "[WARNING] GotRightMeal: No meals available for delivery" << std::endl;
+            RCLCPP_WARN(this->get_logger(), "GotRightMeal: No meals available for delivery");
             return BT::NodeStatus::FAILURE;
         }
-
-        std::cout << "[INFO] Meals map content before deletion:" << std::endl;
 
         auto it = meals.begin();
         if (it != meals.end())
@@ -54,7 +49,7 @@ public:
 
             if (room_positions.find(room_id) == room_positions.end())
             {
-                std::cerr << "[ERROR] GotRightMeal: Room ID " << room_id << " not found in predefined positions" << std::endl;
+                RCLCPP_ERROR(this->get_logger(), "GotRightMeal: Room ID %d not found in predefined positions", room_id);
                 return BT::NodeStatus::FAILURE;
             }
 
@@ -65,7 +60,7 @@ public:
                 bb->set("meals", meals);
             }
 
-            std::cout << "[INFO] GotRightMeal: Meal ID " << meal_id << " successfully delivered to room " << room_id << std::endl;
+            RCLCPP_INFO(this->get_logger(), "GotRightMeal: Meal ID %d successfully delivered to room %d", meal_id, room_id);
         }
 
         return BT::NodeStatus::SUCCESS;

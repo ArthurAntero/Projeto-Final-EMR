@@ -1,15 +1,15 @@
 #include <behaviortree_cpp/action_node.h>
+#include <rclcpp/rclcpp.hpp>
 #include <iostream>
-#include <unordered_map>
 #include <vector>
 #include <chrono>
 #include <thread>
 
-class DeliverDishesToKitchen : public BT::SyncActionNode
+class DeliverDishesToKitchen : public BT::SyncActionNode, public rclcpp::Node
 {
 public:
     DeliverDishesToKitchen(const std::string &name, const BT::NodeConfiguration &config)
-        : BT::SyncActionNode(name, config) {}
+        : BT::SyncActionNode(name, config), rclcpp::Node("deliver_dishes_to_kitchen_node") {}
 
     static BT::PortsList providedPorts()
     {
@@ -23,27 +23,27 @@ public:
         std::vector<int> dishes;
         if (!getInput("dishes", dishes))
         {
-            std::cout << "[ERROR] DeliverDishesToKitchen: Failed to get dishes list" << std::endl;
+            RCLCPP_ERROR(this->get_logger(), "[ERROR] DeliverDishesToKitchen: Failed to get dishes list");
             return BT::NodeStatus::FAILURE;
         }
 
         if (dishes.empty())
         {
-            std::cout << "[WARNING] DeliverDishesToKitchen: No dishes to deliver" << std::endl;
+            RCLCPP_WARN(this->get_logger(), "[WARNING] DeliverDishesToKitchen: No dishes to deliver");
             return BT::NodeStatus::SUCCESS;
         }
 
-        std::cout << "Delivering dishes to kitchen..." << std::endl;
+        RCLCPP_INFO(this->get_logger(), "Delivering dishes to kitchen...");
 
         while (!dishes.empty())
         {
             int room_id = dishes.front();
             dishes.erase(dishes.begin());
-            std::cout << "Delivering dish from room " << room_id << "... Done." << std::endl;
+            RCLCPP_INFO(this->get_logger(), "Delivering dish from room %d... Done.", room_id);
             std::this_thread::sleep_for(std::chrono::seconds(1));
         }
 
-        std::cout << "[INFO] DeliverDishesToKitchen: All dishes delivered to kitchen" << std::endl;
+        RCLCPP_INFO(this->get_logger(), "[INFO] DeliverDishesToKitchen: All dishes delivered to kitchen");
 
         return BT::NodeStatus::SUCCESS;
     }
