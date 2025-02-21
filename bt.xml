@@ -4,7 +4,7 @@
     <BehaviorTree ID="BehaviorTree">
         <ReactiveSequence>
             <Fallback>
-                <Condition ID="IsBatteryAbove15" battery_level="{battery_level}"/>
+                <Condition ID="IsBatteryAbove15" battery_level="{battery_level}" msg="{msg}"/>
                 <Action ID="GoToRechargeBase" recharge_base_x="{recharge_base_x}" recharge_base_y="{recharge_base_y}" recharge_base_yaw="{recharge_base_yaw}"/>
             </Fallback>
             <Sequence name="PickupMeal">
@@ -86,7 +86,8 @@
             <input_port name="room_positions"/>
         </Condition>
         <Condition ID="IsBatteryAbove15">
-            <output_port name="battery_level"/>
+            <input_port name="battery_level"/>
+            <output_port name="msg"/>
         </Condition>
         <Condition ID="IsPickUpAvailable">
             <input_port name="available"/>

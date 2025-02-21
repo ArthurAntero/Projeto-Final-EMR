@@ -1,13 +1,12 @@
 #include "behaviortree_cpp_v3/bt_factory.h"
-#include <behaviortree_cpp/action_node.h>
-#include <behaviortree_cpp/bt_factory.h>
-// #include <rclcpp/rclcpp.hpp>
+#include <rclcpp/rclcpp.hpp>
 #include <iostream>
 #include <unordered_map>
 #include <vector>
 #include <chrono>
 #include <thread>
 
+// Incluindo os arquivos das ações
 #include "deliver-dish-to-kitchen.cpp"
 #include "deliver-to-table.cpp"
 #include "fetch-room-for-dishes.cpp"
@@ -26,19 +25,21 @@
 
 int main(int argc, char **argv)
 {
-    // rclcpp::init(argc, argv);
-    // auto node = rclcpp::Node::make_shared("robot_behavior_tree");
+    // Inicializando o ROS 2
+    rclcpp::init(argc, argv);
+    auto node = rclcpp::Node::make_shared("robot_behavior_tree");
 
     BT::BehaviorTreeFactory factory;
 
+    // Registrando os nós, passando o ponteiro para o nó ROS2 para os que precisam
     factory.registerNodeType<DeliverDishesToKitchen>("DeliverDishesToKitchen");
     factory.registerNodeType<DeliverToTable>("DeliverToTable");
     factory.registerNodeType<FetchRoomForDishes>("FetchRoomForDishes");
     factory.registerNodeType<FetchRoom>("FetchRoom");
-    factory.registerNodeType<GoToKitchen>("GoToKitchen");
-    factory.registerNodeType<GoToRechargeBase>("GoToRechargeBase");
-    factory.registerNodeType<GoToRoom>("GoToRoom");
-    factory.registerNodeType<GoToWaitingRoom>("GoToWaitingRoom");
+    factory.registerNodeType<GoToKitchen>("GoToKitchen", node);  // Passando o node para o GoToKitchen
+    factory.registerNodeType<GoToRechargeBase>("GoToRechargeBase", node);  // Passando o node para o GoToRechargeBase
+    factory.registerNodeType<GoToRoom>("GoToRoom", node);  // Passando o node para o GoToRoom
+    factory.registerNodeType<GoToWaitingRoom>("GoToWaitingRoom", node);  // Passando o node para o GoToWaitingRoom
     factory.registerNodeType<GotRightMeal>("GotRightMeal");
     factory.registerNodeType<IsBatteryAbove15>("IsBatteryAbove15");
     factory.registerNodeType<IsPickUpAvailable>("IsPickUpAvailable");
@@ -47,12 +48,11 @@ int main(int argc, char **argv)
     factory.registerNodeType<WaitForCall>("WaitForCall");
     factory.registerNodeType<WaitForPickUp>("WaitForPickUp");
 
-
+    // Criando a árvore de comportamento a partir do arquivo XML
     auto tree = factory.createTreeFromFile("./bt.xml");
 
-
-
-    while (true)
+    // Configuração do Blackboard com os valores de entrada
+    while (rclcpp::ok())
     {
         tree.rootBlackboard()->set("recharge_base_x", 0.0);
         tree.rootBlackboard()->set("recharge_base_y", 0.0);
@@ -68,13 +68,16 @@ int main(int argc, char **argv)
         tree.rootBlackboard()->set("wait_time_sec", 10);
         tree.rootBlackboard()->set("pickup_time_sec", 10);
 
+        // Executando a árvore de comportamento
         auto result = tree.tickRootWhileRunning();
 
         std::cout << "\nBT ended with result: " << result << std::endl;
+
+        // Para garantir que o ROS2 está rodando corretamente
+        rclcpp::spin_some(node);
     }
 
-
-    // rclcpp::shutdown();
-
+    // Finalizando o ROS2
+    rclcpp::shutdown();
     return 0;
 }
