@@ -54,7 +54,6 @@ int main(int argc, char **argv)
         tree.rootBlackboard()->set("waiting_room_yaw", 90.0);
         tree.rootBlackboard()->set<std::unordered_map<int, std::vector<double>>>("room_positions", {{101, {1.0, 1.0, 90.0}}, {102, {2.0, 2.0, 90.0}}, {103, {3.0, 3.0, 90.0}}});
         tree.rootBlackboard()->set<std::unordered_map<int, bool>>("available", {{101, true}, {102, false}, {103, true}});
-        tree.rootBlackboard()->set("wait_time_sec", 10);
         tree.rootBlackboard()->set("pickup_time_sec", 10);
 
         auto result = tree.tickRootWhileRunning();
