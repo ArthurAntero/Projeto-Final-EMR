@@ -1,39 +1,42 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.8)
 
 project(projeto-final-pkg)
 
-# Definir o padrão C++14
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Encontrar pacotes ROS2 necessários
+find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rclcpp_action REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(nav2_util REQUIRED)
+find_package(nav2_msgs REQUIRED)
+find_package(nav2_core REQUIRED)
+find_package(nav2_behavior_tree REQUIRED)
+find_package(nav2_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(std_msgs REQUIRED)  # Adicionando std_msgs
 find_package(behaviortree_cpp_v3 REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 
-# Declarar o executável do projeto com todos os arquivos .cpp do diretório src/
 add_executable(${PROJECT_NAME}
     src/main.cpp
-    src/deliver-dish-to-kitchen.cpp
-    src/deliver-to-table.cpp
-    src/fetch-room.cpp
-    src/go-to-pose.cpp
-    src/got-right-meal.cpp
-    src/is-battery-above-15.cpp
-    src/pickup-dish.cpp
-    src/pickup-meal.cpp
-    src/wait-for-call.cpp
-    src/wait-for-pickup.cpp
 )
 
-# Linkar as bibliotecas do ROS2 e do BehaviorTree
+ament_target_dependencies(${PROJECT_NAME} geometry_msgs rclcpp std_msgs rclcpp_action nav2_msgs)
+
 target_link_libraries(${PROJECT_NAME}
-  rclcpp::rclcpp
-  geometry_msgs
-  std_msgs
-  BT::behaviortree_cpp_v3
+    rclcpp
+    behaviortree_cpp_v3
+    rclcpp_action
+    nav2_msgs
+    nav2_util
+    nav2_core
+    nav2_behavior_tree
+    geometry_msgs
+    std_msgs
+    tf2
+    tf2_geometry_msgs
 )
 
-# Definir a instalação do executável
 install(TARGETS ${PROJECT_NAME} DESTINATION lib/${PROJECT_NAME})

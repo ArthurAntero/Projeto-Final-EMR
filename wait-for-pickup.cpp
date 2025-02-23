@@ -1,4 +1,3 @@
-#include <behaviortree_cpp/action_node.h>
 #include <iostream>
 #include <unordered_map>
 #include <vector>

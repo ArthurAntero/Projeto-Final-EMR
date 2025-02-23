@@ -1,56 +1,58 @@
-#include <behaviortree_cpp_v3/action_node.h>
-#include <rclcpp/rclcpp.hpp>
-#include <geometry_msgs/geometry_msgs/msg/pose_stamped.hpp>
-#include <iostream>
+#include "rclcpp/rclcpp.hpp"
+#include "behaviortree_cpp_v3/behavior_tree.h"
+#include "rclcpp_action/rclcpp_action.hpp"
+#include "nav2_msgs/action/navigate_to_pose.hpp"
 
-class GoToPose : public BT::SyncActionNode
+GoToPose::GoToPose(const std::string &name,
+                   const BT::NodeConfiguration &config,
+                   rclcpp::Node::SharedPtr node_ptr)
+    : BT::StatefulActionNode(name, config), node_ptr_(node_ptr)
 {
-public:
-    explicit GoToPose(const std::string &name, const BT::NodeConfiguration &config, rclcpp::Node::SharedPtr node_ptr)
-        : BT::SyncActionNode(name, config), node_ptr_(node_ptr)
-    {
-        // Criar o publisher de movimento para o tópico "goal_pose"
-        publisher_ = node_ptr_->create_publisher<geometry_msgs::msg::PoseStamped>("goal_pose", 10);
-    }
+  action_client_ptr_ = rclcpp_action::create_client<NavigateToPose>(node_ptr_, "navigate_to_pose");
+  done_flag_ = false;
+}
 
-    static BT::PortsList providedPorts()
-    {
-        return {
-            BT::InputPort<double>("x"),
-            BT::InputPort<double>("y"),
-            BT::InputPort<double>("yaw")
-        };
-    }
 
-    BT::NodeStatus tick() override
-    {
-        double x, y, yaw;
+BT::NodeStatus GoToPose::onStart()
+{
+  auto goal_msg = NavigateToPose::Goal();
+  auto x_in = getInput<double>("x");
+  auto y_in = getInput<double>("y");
+  auto yaw_in = getInput<double>("yaw");
+  double x = x_in.value(), y = y_in.value(), yaw = yaw_in.value();
+  goal_msg.pose.header.frame_id = "map";
+  goal_msg.pose.pose.position.x = x;
+  goal_msg.pose.pose.position.y = y;
 
-        // Obter as entradas para x, y e yaw
-        if (!getInput("x", x) || !getInput("y", y) || !getInput("yaw", yaw))
-        {
-            std::cout << "[ERROR] GoToPose: Failed to get position inputs" << std::endl;
-            return BT::NodeStatus::FAILURE;
-        }
+  tf2::Quaternion q;
+  q.setRPY(0, 0, yaw);
+  q.normalize();
+  goal_msg.pose.pose.orientation = tf2::toMsg(q);
 
-        // Informar a posição e orientação para o console
-        std::cout << "[INFO] GoToPose: Going to position [x: " << x << ", y: " << y << ", yaw: " << yaw << "]" << std::endl;
+  auto send_goal_options = rclcpp_action::Client<NavigateToPose>::SendGoalOptions();
+  send_goal_options.result_callback = std::bind(&GoToPose::nav_to_pose_callback, this, std::placeholders::_1);
 
-        // Criar a mensagem PoseStamped com as coordenadas e orientação recebidas
-        geometry_msgs::msg::PoseStamped pose_msg;
-        pose_msg.header.stamp = rclcpp::Clock().now();
-        pose_msg.header.frame_id = "map";  // Ou "base_link", dependendo da sua configuração
-        pose_msg.pose.position.x = x;
-        pose_msg.pose.position.y = y;
-        pose_msg.pose.orientation.z = yaw;  // Pode usar apenas yaw para orientação 2D (para simplificação)
+  done_flag_ = false;
+  for(int i=0; i<5; i++){
+    action_client_ptr_->async_send_goal(goal_msg, send_goal_options);
+    sleep(1);
+  }
 
-        // Publicar a mensagem no tópico "goal_pose"
-        publisher_->publish(pose_msg);
+  RCLCPP_INFO(node_ptr_->get_logger(), "Sent Goal to Nav2\n");
+  return BT::NodeStatus::RUNNING;
+}
 
-        return BT::NodeStatus::SUCCESS;
-    }
+BT::NodeStatus GoToPose::onRunning()
+{
+  if (done_flag_){
+    RCLCPP_INFO(node_ptr_->get_logger(), "Goal reached\n");
+    return BT::NodeStatus::SUCCESS;
+  }
+  return BT::NodeStatus::RUNNING;
+}
 
-private:
-    rclcpp::Node::SharedPtr node_ptr_;  // Ponteiro para o nó ROS 2
-    rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr publisher_;  // Publisher para o movimento
-};
+void GoToPose::nav_to_pose_callback(const GoalHandleNav::WrappedResult &result)
+{
+  if (result.code == rclcpp_action::ResultCode::SUCCEEDED)
+    done_flag_ = true;
+}

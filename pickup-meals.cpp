@@ -1,14 +1,13 @@
-#include <behaviortree_cpp/action_node.h>
 #include <iostream>
 #include <unordered_map>
 #include <vector>
 #include <chrono>
 #include <thread>
 
-class PickUpMeal : public BT::SyncActionNode
+class PickUpMeals : public BT::SyncActionNode
 {
 public:
-    PickUpMeal(const std::string &name, const BT::NodeConfiguration &config)
+    PickUpMeals(const std::string &name, const BT::NodeConfiguration &config)
         : BT::SyncActionNode(name, config) {}
 
     static BT::PortsList providedPorts()
@@ -34,7 +33,7 @@ public:
             std::cout << "Enter the room ID for meal " << meal_id + 1 << ": ";
             std::cin >> room_id;
             meals[meal_id] = room_id;
-            std::cout << "[INFO] PickUpMeal: Meal " << meal_id << " assigned to room " << room_id << std::endl;
+            std::cout << "[INFO] PickUpMeals: Meal " << meal_id << " assigned to room " << room_id << std::endl;
         }
 
         setOutput("meals", meals);
